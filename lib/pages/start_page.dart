@@ -16,6 +16,11 @@ class _StartPageState extends State<StartPage> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  // Sign Up functionality
+  // Syntax : supabase.auth.signup(email:'',password:'');
+  // Sign In functionality
+  // Syntax : supabase.auth.signInWithPassword(email:'',password:'');
+
   @override
   void dispose() {
     supabase.dispose();
@@ -73,15 +78,87 @@ class _StartPageState extends State<StartPage> {
                     obscureText: true,
                   ),
                   const SizedBox(height: 25),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: Text('Sign In'),
-                  ),
+                  _signInLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : ElevatedButton(
+                          onPressed: () async {
+                            final isValid = _formKey.currentState?.validate();
+                            if (isValid != true) {
+                              return;
+                            }
+                            setState(() {
+                              _signInLoading = true;
+                            });
+                            try {
+                              await supabase.auth.signInWithPassword(
+                                  password: _passwordController.text,
+                                  email: _emailController.text);
+                              setState(() {
+                                _signInLoading = false;
+                              });
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: const Text(
+                                    "Sign In Failed",
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              setState(() {
+                                _signInLoading = false;
+                              });
+                            }
+                          },
+                          child: Text('Sign In'),
+                        ),
                   const Divider(),
-                  OutlinedButton(
-                    onPressed: () {},
-                    child: Text('Sign Up'),
-                  ),
+                  _signUpLoading
+                      ? Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : OutlinedButton(
+                          onPressed: () async {
+                            final isValid = _formKey.currentState?.validate();
+                            if (isValid != true) {
+                              return;
+                            }
+                            setState(() {
+                              _signUpLoading = true;
+                            });
+                            try {
+                              await supabase.auth.signUp(
+                                  password: _passwordController.text,
+                                  email: _emailController.text);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: const Text(
+                                    "Success! Confirmation Email Sent",
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              setState(() {
+                                _signUpLoading = false;
+                              });
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: const Text(
+                                    "Sign Up Failed",
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              setState(() {
+                                _signUpLoading = false;
+                              });
+                            }
+                          },
+                          child: const Text('Sign Up'),
+                        ),
                 ],
               ),
             ),
