@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  HomePage({super.key});
+  final SupabaseClient supabase = Supabase.instance.client;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await supabase.auth.signOut();
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
+      ),
       body: Center(
         child: Text(
           'Home Page',
