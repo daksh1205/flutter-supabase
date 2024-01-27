@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,6 +16,7 @@ class _StartPageState extends State<StartPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _googleSignInLoading = false;
 
   // Sign Up functionality
   // Syntax : supabase.auth.signup(email:'',password:'');
@@ -158,6 +160,55 @@ class _StartPageState extends State<StartPage> {
                             }
                           },
                           child: const Text('Sign Up'),
+                        ),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(15),
+                        child: Text("OR"),
+                      ),
+                      Expanded(
+                        child: Divider(),
+                      ),
+                    ],
+                  ),
+                  _googleSignInLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                      : OutlinedButton.icon(
+                          onPressed: () async {
+                            setState(() {
+                              _googleSignInLoading = true;
+                            });
+                            try {
+                              // Syntax for Google Sign In
+                              await supabase.auth.signInWithOAuth(
+                                  OAuthProvider.google,
+                                  redirectTo: kIsWeb
+                                      ? null
+                                      : "io.supabase.myflutterapp://login-callback");
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Sign In Failed'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              setState(() {
+                                _googleSignInLoading = false;
+                              });
+                            }
+                          },
+                          label: Text("Continue with Google"),
+                          icon: Image.network(
+                            "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png",
+                            height: 20,
+                          ),
                         ),
                 ],
               ),
