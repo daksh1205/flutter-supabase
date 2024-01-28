@@ -19,13 +19,32 @@ import 'create_page.dart';
 // 1. Order : supabase.from('users').select().order('id', ascending: false);
 // 2. Limit the query : supabase.from('users').select().limit(10);
 
-class HomePage extends StatelessWidget {
+// RealTime database
+// Syntax : supabase.from('users').stream(primaryKey:['id']).listen((List data) {......});
+// Using Streambuilder - stream : supabase.from('users').stream(primaryKey: ['id']);
+
+class HomePage extends StatefulWidget {
   HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final SupabaseClient supabase = Supabase.instance.client;
+  late Stream<List<Map<String, dynamic>>> _readStream;
+
+  @override
+  void initState() {
+    _readStream = supabase
+        .from('todos')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', supabase.auth.currentUser!.id)
+        .order('id', ascending: false);
+    super.initState();
+  }
 
   // Syntax to select data
-  // supabase.from('todos').select();
-
   Future<List> readData() async {
     final result = await supabase
         .from('todos')
@@ -49,8 +68,8 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: FutureBuilder(
-        future: readData(),
+      body: StreamBuilder(
+        stream: _readStream,
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasError) {
             return Center(
