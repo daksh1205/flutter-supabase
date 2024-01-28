@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class CreatePage extends StatefulWidget {
   const CreatePage({super.key});
@@ -10,6 +11,42 @@ class CreatePage extends StatefulWidget {
 class _CreatePageState extends State<CreatePage> {
   bool isLoading = false;
   TextEditingController titleController = TextEditingController();
+  final SupabaseClient supabase = Supabase.instance.client;
+
+// Syntax to insert a record
+// await supabase.from('todos').insert({'title':'dummy value','date':'value'});
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    supabase.dispose();
+    super.dispose();
+  }
+
+  Future insertData() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      String userId = supabase.auth.currentUser!.id;
+      await supabase.from('todos').insert(
+        {'title': titleController.text, 'user_id': userId},
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      print("Error inserting data : $e");
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Something went wrong",
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +70,14 @@ class _CreatePageState extends State<CreatePage> {
             const SizedBox(
               height: 10,
             ),
-            ElevatedButton(
-              onPressed: () {},
-              child: const Text("Create"),
-            ),
+            isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : ElevatedButton(
+                    onPressed: insertData,
+                    child: const Text("Create"),
+                  ),
           ],
         ),
       ),
