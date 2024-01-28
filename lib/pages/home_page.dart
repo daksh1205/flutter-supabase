@@ -7,6 +7,14 @@ class HomePage extends StatelessWidget {
   HomePage({super.key});
   final SupabaseClient supabase = Supabase.instance.client;
 
+  // Syntax to select data
+  // supabase.from('todos').select();
+
+  Future<List> readData() async {
+    final result = await supabase.from('todos').select();
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,29 +29,50 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          String data = "Dummy Data $index";
-          return ListTile(
-            title: Text(data),
-            trailing: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditPage(
-                      data,
-                      index,
+      body: FutureBuilder(
+        future: readData(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+          if (snapshot.hasData) {
+            if (snapshot.data.length == 0) {
+              return const Center(
+                child: Text("No data available"),
+              );
+            }
+            return ListView.builder(
+              itemCount: snapshot.data.length,
+              itemBuilder: (context, int index) {
+                var data = snapshot.data[index];
+                return ListTile(
+                  title: Text(data['title']),
+                  trailing: IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPage(
+                            data['title'],
+                            data['id'],
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.edit,
+                      color: Colors.red,
                     ),
                   ),
                 );
               },
-              icon: const Icon(
-                Icons.edit,
-                color: Colors.red,
-              ),
-            ),
+            );
+          }
+
+          return const Center(
+            child: CircularProgressIndicator(),
           );
         },
       ),
