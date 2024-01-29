@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_supabase/pages/upload_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'edit_page.dart';
 import 'create_page.dart';
@@ -60,6 +61,17 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Flutter Supabase"),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => UploadPage(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.upload_file),
+          ),
           IconButton(
             onPressed: () async {
               await supabase.auth.signOut();
