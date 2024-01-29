@@ -6,6 +6,9 @@ import 'dart:io';
 // Syntax to fetch Images
 // final List<FileObject> results = await supabase.storage.from('bucketName').list();
 
+// Syntax to remove file
+// final List<FileObject> results = await supabase.storage.from('folderName/image1.png']);
+
 class UploadPage extends StatefulWidget {
   const UploadPage({super.key});
 
@@ -28,8 +31,22 @@ class _UploadPageState extends State<UploadPage> {
           .getPublicUrl("${supabase.auth.currentUser!.id}/${image.name}");
       myImages.add({'name': image.name, 'url': getUrl});
     }
-    print(myImages);
     return myImages;
+  }
+
+  Future<void> deleteImage(String imageName) async {
+    try {
+      await supabase.storage
+          .from('user-images')
+          .remove([supabase.auth.currentUser!.id + "/" + imageName]);
+      setState(() {});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: const Text("Something went wrong !"),
+        ),
+      );
+    }
   }
 
   Future uploadFile() async {
@@ -105,7 +122,11 @@ class _UploadPageState extends State<UploadPage> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        deleteImage(
+                          imageData['name'],
+                        );
+                      },
                       icon: const Icon(Icons.delete),
                       color: Colors.red,
                     ),
